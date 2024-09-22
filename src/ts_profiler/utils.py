@@ -91,7 +91,7 @@ def approximate_entropy_(x):
     return approximate_entropy(x, 2, 0.2*x.std())
 
 def adf(x):
-    return adfuller(x)
+    return adfuller(x)[1]
 
 @dataclass
 class MeanModel:
