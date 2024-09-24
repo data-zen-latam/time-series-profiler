@@ -1,4 +1,6 @@
-/data/
+*.csv
+*.parquet.gzip
+*.parquet.gzip:Zone.Identifier
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
