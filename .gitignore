@@ -107,6 +107,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+ts_diagnostics/
 env/
 venv/
 ENV/
