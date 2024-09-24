@@ -41,4 +41,8 @@ result[features].to_csv(PROCESSED_DATA_DIR / 'features.csv', index=False)
 result[['series'] + descriptive_stats].to_csv(PROCESSED_DATA_DIR / 'descriptive_stats.csv', index=False)
 result[['series'] + value_summary].to_csv(PROCESSED_DATA_DIR / 'values_summary.csv', index=False)
 
+<<<<<<< Updated upstream
 # %%
+=======
+### Pending HTML.Ydataprofiling bug.
+>>>>>>> Stashed changes

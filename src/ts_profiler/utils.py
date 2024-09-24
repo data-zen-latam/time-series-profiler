@@ -6,6 +6,9 @@ from statsmodels.tsa.stattools import adfuller
 from tsfresh.feature_extraction.feature_calculators import approximate_entropy
 from statsmodels.tsa.arima.model import ARIMA
 from dataclasses import dataclass
+
+### Add fourier entropy.
+
 def range_(x):
     return np.max(x) - np.min(x)
 

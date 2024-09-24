@@ -42,3 +42,4 @@ funcs = {
     'yeojohnson': yeojohnson_
 }
 
+### pensar en discretizacion de la serie.

@@ -12,6 +12,8 @@ data = pd.read_csv(PROCESSED_DATA_DIR / 'features.csv')
 ts = pd.read_csv(PROCESSED_DATA_DIR / 'diff_temp_series.csv')
 # %%
 
+### Perfilamiento de caracteristicas y predictibilidad
+
 
 pd.plotting.scatter_matrix(
     data,

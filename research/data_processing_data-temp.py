@@ -8,7 +8,7 @@ from ts_profiler.config import RAW_DATA_DIR, PROCESSED_DATA_DIR
 
 #%%
 output_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'
-# %%
+#%%
 files = glob.glob((RAW_DATA_DIR / '*.csv').__str__())
 data_list = [pd.read_csv(file, header=4, index_col=0) for file in files]
 data = pd.concat(data_list, axis=1)
