@@ -1,0 +1,2 @@
+- create makefile
+- simplify template architecture

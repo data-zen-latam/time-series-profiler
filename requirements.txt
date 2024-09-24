@@ -65,6 +65,7 @@ psutil==6.0.0
 ptyprocess==0.7.0
 pure_eval==0.2.3
 -e git+ssh://git@github.com/anthos-1/time-series-profiler.git@4a8b3b2bebf96981ab67c3dc8395d9eae0dfd71b#egg=py_project_toml
+pyarrow-17.0.0
 pycodestyle==2.12.1
 pydocstyle==6.3.0
 pyflakes==3.2.0
