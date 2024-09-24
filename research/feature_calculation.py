@@ -5,8 +5,12 @@ import numpy as np
 from ts_profiler.config import  PROCESSED_DATA_DIR, REPORTS_DIR, features, descriptive_stats, value_summary
 from ts_profiler.features import funcs
 
+import os
+from pathlib import Path
 
 #%%
+# input_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'
+PROCESSED_DATA_DIR = Path(os.getcwd()).parents[0] / 'data/processed/'
 input_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'
 output_path = REPORTS_DIR / 'timeseries_diagnostics.html'
 # %%
@@ -41,8 +45,6 @@ result[features].to_csv(PROCESSED_DATA_DIR / 'features.csv', index=False)
 result[['series'] + descriptive_stats].to_csv(PROCESSED_DATA_DIR / 'descriptive_stats.csv', index=False)
 result[['series'] + value_summary].to_csv(PROCESSED_DATA_DIR / 'values_summary.csv', index=False)
 
-<<<<<<< Updated upstream
-# %%
-=======
 ### Pending HTML.Ydataprofiling bug.
->>>>>>> Stashed changes
+
+# %%
