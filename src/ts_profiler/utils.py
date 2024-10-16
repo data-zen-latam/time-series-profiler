@@ -1,6 +1,5 @@
 import numpy as np
-from scipy.stats import entropy, yeojohnson
-from scipy.stats import kurtosis, skew
+from scipy.stats import entropy, yeojohnson, kurtosis, skew, shapiro
 from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import adfuller
 from tsfresh.feature_extraction.feature_calculators import approximate_entropy, fourier_entropy
@@ -176,6 +175,9 @@ def strength_seasonal(x):
 ### The yeo johnson transformation can be used to normalize, stabilize the variance of a series but tells nothing by itself.
 # Kolmogorov Smirnov could be used to measure the difference in the cdfs between original and transformed to detect any difficulties
 # stemming from the original data distribution, but you already get this from skewness and kurtosis. NEEDS MORE WORK TO MAKE IT USABLE.
+
+def shapiro_(x):
+    return shapiro(x)
 
 def yeojohnson_(x):
     return yeojohnson(x[x.notna()])[1]
