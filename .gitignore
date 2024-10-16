@@ -1,4 +1,5 @@
 *.csv
+*.xls
 *.parquet.gzip
 *.parquet.gzip:Zone.Identifier
 # Byte-compiled / optimized / DLL files
