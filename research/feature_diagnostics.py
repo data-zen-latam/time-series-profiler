@@ -9,7 +9,7 @@ from ts_profiler.utils import MeanModel, SeasonalModel, TrendModel, ARIMAModel
 #%%
 
 data = pd.read_csv(PROCESSED_DATA_DIR / 'features.csv')
-ts = pd.read_csv(PROCESSED_DATA_DIR / 'diff_temp_series.csv')
+ts = pd.read_parquet(PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip')
 # %%
 
 ### Perfilamiento de caracteristicas y predictibilidad
@@ -22,7 +22,7 @@ pd.plotting.scatter_matrix(
 # %%
 data.describe()
 # %%
-series = data[data['entropy'].min() == data['entropy']]['series']
+series = data[data['entropy'].max() == data['entropy']]['series']
 
 ts[series].plot()
 # %%
@@ -37,8 +37,16 @@ model_suite = {
 
 results = pd.DataFrame()
 
+# %%
+def mase(y, yhat):
+    return np.mean([
+                abs(y[i] - yhat[i]) / (abs(y[i] - y[i - 1]) / len(y) - 1)
+                for i in range(1, len(y))
+                ])
+
 
 #%%
+serie  = 'europe'
 for serie in ts.set_index('date'):
     y = ts[serie]
 
@@ -50,12 +58,6 @@ for serie in ts.set_index('date'):
 
         results = pd.concat([
             results,
-            pd.DataFrame([serie, ])
+            pd.DataFrame([[serie, model_name, mase(y, yhat)]])
             ])
 
-# %%
-def mase(y, yhat):
-    return np.mean([
-                abs(y[i] - yhat[i]) / (abs(y[i] - y[i - 1]) / len(y) - 1)
-                for i in range(1, len(y))
-                ])

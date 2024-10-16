@@ -148,7 +148,7 @@ def mad(x):
     Calculates the mean absolute deviation (MAD) of the series.
     The MAD is a robust measure of dispersion and can be used to identify potential outliers.
     """
-    return (x - x.mean()).abs().mean()
+    return np.mean(np.abs(x - x.mean()))
 
 def entropy_calculation(x):
     """
@@ -180,7 +180,7 @@ def shapiro_(x):
     return shapiro(x)
 
 def yeojohnson_(x):
-    return yeojohnson(x[x.notna()])[1]
+    return yeojohnson(x[~np.isnan(x)])[1]
 
 def acf1(x):
     return np.corrcoef(x[0:-1], x[1:])[0,1]
@@ -199,49 +199,50 @@ def adf(x):
 
 @dataclass
 class MeanModel:
-    x: np.array
+    x: np.ndarray
 
     def fit(self) -> None:
         self.mean = np.array([self.x.mean()] * self.x.shape[0])
 
-    def predict(self) -> np.array:
+    def predict(self) -> np.ndarray:
         return self.mean
 
 @dataclass
 class TrendModel:
-    x: np.array
+    x: np.ndarray
 
     def fit(self) -> None:
         stl = STL(self.x, period=13)
         res = stl.fit()
         self.trend = res.trend
 
-    def predict(self) -> np.array:
+    def predict(self) -> np.ndarray:
         return self.trend
 
 
 @dataclass
 class SeasonalModel:
-    x: np.array
+    x: np.ndarray
 
     def fit(self) -> None:
         stl = STL(self.x, period=13)
         res = stl.fit()
         self.seasonal = res.seasonal
 
-    def predict(self) -> np.array:
+    def predict(self) -> np.ndarray:
         return self.seasonal
 
 
 
 @dataclass
 class ARIMAModel:
-    x: np.array
+    x: np.ndarray
     model = ARIMA
 
     def fit(self) -> None:
         self.model = self.model(self.x, order = (1,1,1)).fit()
 
-    def predict(self) -> np.array:
-        return self.model.predict()
+    def predict(self) -> np.ndarray:
+        return np.array([])
+        # return self.model.predict()
 
