@@ -10,8 +10,8 @@ from pathlib import Path
 
 #%%
 # input_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'
-PROCESSED_DATA_DIR = Path(os.getcwd()).parents[0] / 'data/processed/'
-REPORTS_DIR = Path(os.getcwd()).parents[0] / 'reports/'
+PROCESSED_DATA_DIR = Path(os.getcwd()) / 'data/processed/'
+REPORTS_DIR = Path(os.getcwd()) / 'reports/'
 input_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'
 output_path = REPORTS_DIR / 'timeseries_diagnostics.html'
 # %%
