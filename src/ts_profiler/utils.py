@@ -193,6 +193,8 @@ def fourier_entropy_(x):
 def adf(x):
     return adfuller(x)[1]
 
+### Mutual information missing.
+
 @dataclass
 class MeanModel:
     x: np.array

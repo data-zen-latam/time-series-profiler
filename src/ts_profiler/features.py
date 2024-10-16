@@ -41,5 +41,3 @@ funcs = {
     'autocorr_lag1': acf1,
     'yeojohnson': yeojohnson_
 }
-
-### pensar en discretizacion de la serie.
