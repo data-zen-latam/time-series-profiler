@@ -46,3 +46,14 @@ result[['series'] + descriptive_stats].to_csv(PROCESSED_DATA_DIR / 'descriptive_
 result[['series'] + value_summary].to_csv(PROCESSED_DATA_DIR / 'values_summary.csv', index=False)
 
 ### Pending HTML.Ydataprofiling bug.
+
+#%%
+from ydata_profiling import ProfileReport
+# %%
+data['date'] = data['date'].astype('datetime64[ns]')
+
+
+profile = ProfileReport(data, tsmode=True, sortby='date')
+# %%
+profile.to_file(output_path.__str__())
+# %%
