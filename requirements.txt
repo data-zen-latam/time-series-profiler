@@ -80,7 +80,6 @@ prompt_toolkit==3.0.47
 psutil==6.0.0
 ptyprocess==0.7.0
 pure_eval==0.2.3
--e git+ssh://git@github.com/anthos-1/time-series-profiler.git@708db5c03eccab1114eb01f29a1822d79a6b9cd8#egg=py_project_toml
 pyarrow==17.0.0
 pycodestyle==2.12.1
 pydantic==2.9.2
@@ -126,7 +125,8 @@ tomlkit==0.13.2
 tornado==6.4.1
 tqdm==4.66.5
 traitlets==5.14.3
-tsfresh==0.20.3
+-e git+ssh://git@github.com/anthos-1/time-series-profiler.git@03e572146da9f207e59ba9edbf28e20167d4c669#egg=ts_profiler
+tsfresh==0.20.2
 typeguard==4.3.0
 typing_extensions==4.12.2
 tzdata==2024.1
@@ -137,4 +137,4 @@ wcwidth==0.2.13
 wordcloud==1.9.3
 wrapt==1.16.0
 xlrd==2.0.1
-ydata-profiling==4.10.0
+ydata-profiling==4.11.0
