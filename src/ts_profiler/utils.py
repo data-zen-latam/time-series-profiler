@@ -177,22 +177,58 @@ def strength_seasonal(x):
 # stemming from the original data distribution, but you already get this from skewness and kurtosis. NEEDS MORE WORK TO MAKE IT USABLE.
 
 def shapiro_(x):
+    """
+    Performs the Shapiro-Wilk test for normality on the input time series.
+    A low p-value from this test indicates that the time series is not normally distributed,
+    which can make it harder to forecast using traditional methods that assume normality.
+    """
     return shapiro(x)
 
 def yeojohnson_(x):
+    """
+    Applies the Yeo-Johnson transformation to the input time series.
+    The Yeo-Johnson transformation is a data normalization technique that can make
+    non-normal data more closely resemble a normal distribution.
+    A large value of the transformation parameter (returned by this function) suggests
+    that the time series is highly non-normal, which can make it harder to forecast.
+    """
     return yeojohnson(x[~np.isnan(x)])[1]
 
 def acf1(x):
-    return np.corrcoef(x[0:-1], x[1:])[0,1]
+    """
+    Calculates the first-order autocorrelation coefficient of the input time series.
+    A high autocorrelation value indicates that the time series is highly correlated
+    with its own past values, which can make it easier to forecast using time series
+    models that capture this autocorrelation structure.
+    """
+    return np.corrcoef(x[0:-1], x[1:])[0, 1]
 
-### Part of https://www.youtube.com/watch?v=5vOYgJ-80Bg, 40 minutes worth exploring further.
 def approximate_entropy_(x):
-    return approximate_entropy(x, 2, 0.2*x.std())
+    """
+    Calculates the approximate entropy of the input time series.
+    Approximate entropy is a measure of the complexity and irregularity of a time series.
+    A high approximate entropy value suggests that the time series is highly irregular
+    and complex, which can make it harder to forecast accurately.
+    """
+    return approximate_entropy(x, 2, 0.2 * x.std())
 
 def fourier_entropy_(x):
-    return fourier_entropy(x, bins = 10)
+    """
+    Calculates the Fourier entropy of the input time series.
+    Fourier entropy is a measure of the spectral complexity of a time series.
+    A high Fourier entropy value indicates that the time series has a complex
+    frequency spectrum, which can make it harder to forecast using traditional
+    time series models that assume simpler spectral structures.
+    """
+    return fourier_entropy(x, bins=10)
 
 def adf(x):
+    """
+    Performs the Augmented Dickey-Fuller (ADF) test for stationarity on the input time series.
+    A low p-value from this test indicates that the time series is stationary,
+    which can make it easier to forecast using traditional time series models
+    that assume stationarity.
+    """
     return adfuller(x)[1]
 
 ### Mutual information missing.
