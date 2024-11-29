@@ -22,13 +22,6 @@ def coef_var(x):
     """
     return np.std(x, ddof=1) / np.mean(x)
 
-def kurtosis_(x):
-    """
-    Calculates the kurtosis of the series.
-    Kurtosis measures the "tailedness" of a distribution.
-    A high kurtosis value indicates heavy tails or outliers in the data.
-    """
-    return kurtosis(x[x.notna()])
 
 def skewness(x):
     """
@@ -172,6 +165,13 @@ def strength_seasonal(x):
     res = stl.fit()
     return  (1 - res.resid.var()/(x - res.trend).var())
 
+def kurtosis_(x):
+    """
+    Calculates the kurtosis of the series.
+    Kurtosis measures the "tailedness" of a distribution.
+    A high kurtosis value indicates heavy tails or outliers in the data.
+    """
+    return kurtosis(x[x.notna()])
 ### The yeo johnson transformation can be used to normalize, stabilize the variance of a series but tells nothing by itself.
 # Kolmogorov Smirnov could be used to measure the difference in the cdfs between original and transformed to detect any difficulties
 # stemming from the original data distribution, but you already get this from skewness and kurtosis. NEEDS MORE WORK TO MAKE IT USABLE.
@@ -182,7 +182,7 @@ def shapiro_(x):
     A low p-value from this test indicates that the time series is not normally distributed,
     which can make it harder to forecast using traditional methods that assume normality.
     """
-    return shapiro(x)
+    return shapiro(x).pvalue
 
 def yeojohnson_(x):
     """

@@ -39,5 +39,7 @@ funcs = {
     'strength_trend': strength_trend,
     'strength_seasonality': strength_seasonal,
     'autocorr_lag1': acf1,
-    'yeojohnson': yeojohnson_
+    'yeojohnson': yeojohnson_,
+    'fourier_entropy': fourier_entropy_,
+    'shapiro': shapiro_
 }
