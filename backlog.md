@@ -4,3 +4,4 @@
 - Pauta time series predictability scoring (SF)
 - Good/Bad Series Split (SF)
 - Fix path issures by setting up the directory from the config file.
+- Mutual Information in utils.py
