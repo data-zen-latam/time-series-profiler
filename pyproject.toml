@@ -4,13 +4,16 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ts_profiler"
-authors = [{ name = "Carlo Arias", email = "dciborow@microsoft.com" }]
-description = "Sample Python Project for creating a new Python Module"
+authors = [
+    {name = "Carlo Arias", email = "Carlo_Arias@epam.com"},
+    {name = "Sergio M. Ferro", email = "Sergio_Ferro@epam.com"},
+]
+description = "Profiler of time series to assess quality and predictability."
 readme = "README.md"
+
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -19,6 +22,7 @@ classifiers = [
 ]
 requires-python = ">=3.8.1"
 dynamic = ["version"]
+license = "MIT"
 
 dependencies = ["numpy", "pandas", "statsmodels", "scikit-learn", "tsfresh"]
 [project.optional-dependencies]
