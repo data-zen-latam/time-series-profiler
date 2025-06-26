@@ -4,6 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ts_profiler"
+version = "0.0.2"
 authors = [
     {name = "Carlo Arias", email = "Carlo_Arias@epam.com"},
     {name = "Sergio M. Ferro", email = "Sergio_Ferro@epam.com"},
@@ -21,7 +22,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 requires-python = ">=3.8.1"
-dynamic = ["version"]
 license = "MIT"
 
 dependencies = ["numpy", "pandas", "statsmodels", "scikit-learn", "tsfresh"]
