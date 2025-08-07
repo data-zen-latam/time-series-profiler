@@ -1,13 +1,14 @@
 #%%
 
-import pandas as pd
-import numpy as np
 import os
 from pathlib import Path
 
-from ts_profiler.config import PROCESSED_DATA_DIR, REPORTS_DIR
-from jinja2 import Environment, FileSystemLoader
+import pandas as pd
 import plotly.express as px
+from jinja2 import Environment, FileSystemLoader
+
+from ts_profiler.config import PROCESSED_DATA_DIR, REPORTS_DIR
+
 #%%
 PROCESSED_DATA_DIR = Path(os.getcwd()).parents[0] / 'data/processed/'
 REPORTS_DIR = Path(os.getcwd()).parents[0] / 'reports/'

@@ -1,12 +1,18 @@
 #%%
-import pandas as pd
-
-import numpy as np
-from ts_profiler.config import  PROCESSED_DATA_DIR, REPORTS_DIR, features, descriptive_stats, value_summary
-from ts_profiler.features import funcs
-
 import os
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from ts_profiler.config import (
+    PROCESSED_DATA_DIR,
+    REPORTS_DIR,
+    descriptive_stats,
+    features,
+    value_summary,
+)
+from ts_profiler.features import funcs
 
 #%%
 # input_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'
@@ -113,6 +119,7 @@ result[['series'] + value_summary].to_csv(PROCESSED_DATA_DIR / 'values_summary.c
 
 #%%
 from ydata_profiling import ProfileReport
+
 # %%
 data['date'] = data['date'].astype('datetime64[ns]')
 

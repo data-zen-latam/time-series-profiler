@@ -1,7 +1,5 @@
-from pathlib import Path
 import numpy as np
 
-from ts_profiler.config import PROCESSED_DATA_DIR
 from ts_profiler.utils import *
 
 funcs = {

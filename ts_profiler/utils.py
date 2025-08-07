@@ -1,10 +1,14 @@
+from dataclasses import dataclass
+
 import numpy as np
-from scipy.stats import entropy, yeojohnson, kurtosis, skew, shapiro
+from scipy.stats import entropy, kurtosis, shapiro, skew, yeojohnson
+from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import adfuller
-from tsfresh.feature_extraction.feature_calculators import approximate_entropy, fourier_entropy
-from statsmodels.tsa.arima.model import ARIMA
-from dataclasses import dataclass
+from tsfresh.feature_extraction.feature_calculators import (
+    approximate_entropy,
+    fourier_entropy,
+)
 
 ### Data quality indicators
 

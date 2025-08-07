@@ -1,11 +1,11 @@
 #%%
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from ts_profiler.config import PROCESSED_DATA_DIR
-from statsmodels.tsa.arima.model import ARIMA
-from ts_profiler.utils import MeanModel, SeasonalModel, TrendModel, ARIMAModel
+from ts_profiler.utils import ARIMAModel, MeanModel, SeasonalModel, TrendModel
+
 #%%
 
 data = pd.read_csv(PROCESSED_DATA_DIR / 'features.csv')

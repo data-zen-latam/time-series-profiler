@@ -1,10 +1,10 @@
 #%%
 import glob
-import pandas as pd
-import numpy as np
-from statsmodels.tsa.seasonal import STL
 
-from ts_profiler.config import RAW_DATA_DIR, PROCESSED_DATA_DIR
+import numpy as np
+import pandas as pd
+
+from ts_profiler.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 #%%
 output_path = PROCESSED_DATA_DIR / 'diff_temp_series.parquet.gzip'

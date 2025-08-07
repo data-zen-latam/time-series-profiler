@@ -1,7 +1,6 @@
+import numpy as np
 import pandas as pd
 import plotnine as pn
-import numpy as np
-from sklearn.cluster import KMeans
 from tslearn.clustering import TimeSeriesKMeans
 
 url = 'https://raw.githubusercontent.com/Mcompetitions/M4-methods/refs/heads/master/Dataset/Train/Yearly-train.csv'
@@ -59,7 +58,7 @@ series_lens = time_series.groupby(['variable'])['value'].agg(lambda x : x.notna(
 # unique_lens.sort_values()
 # series_lens.query('value in @unique_lens')
 
-q_75 = np.quantile(series_lens['value'], 0.75) 
+q_75 = np.quantile(series_lens['value'], 0.75)
 q_25 = np.quantile(series_lens['value'], 0.25)
 
 iqr = q_75 - q_25

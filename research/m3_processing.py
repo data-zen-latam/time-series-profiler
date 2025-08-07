@@ -1,14 +1,16 @@
 #%%
-import pandas as pd
-from scipy.stats import entropy
-from ts_profiler.config import RAW_DATA_DIR
-from ts_profiler.config import features, descriptive_stats, value_summary
-from ts_profiler.features import funcs
-import numpy as np
-from sklearn.decomposition import PCA
-import seaborn as sns
-import matplotlib.pyplot as plt
 import itertools
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from scipy.stats import entropy
+from sklearn.decomposition import PCA
+
+from ts_profiler.config import RAW_DATA_DIR, features
+from ts_profiler.features import funcs
+
 #%%
 input_path = RAW_DATA_DIR / 'M3C.xls'
 data = {}
@@ -142,7 +144,6 @@ aux['predictability_score'] = aux.loc[:, aux.columns.str.contains('score')].mean
 scores_ = pd.concat([scores_, aux], axis=1)
 
 #%%
-import seaborn as sns
 
 sns.scatterplot(scores_, x='completeness_score', y='predictability_score')
 
