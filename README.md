@@ -47,6 +47,7 @@ from ts_profiler import features, utils
 ```
 
 ## Get sample data from M3C
+https://forecasters.org/resources/time-series-data/m3-competition/
 
 ## License
 
