@@ -1,7 +1,8 @@
 """Unit tests for complexity metrics."""
 
 import pytest
-from src.complexity import spectral_entropy, dominant_frequency_ratio
+
+from src.complexity import dominant_frequency_ratio, spectral_entropy
 
 
 class TestSpectralEntropy:

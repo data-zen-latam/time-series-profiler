@@ -3,14 +3,15 @@
 import argparse
 import logging
 import sys
-import numpy as np
 from pathlib import Path
 
-from src.utils import load_csv
-from src.complexity import spectral_entropy, dominant_frequency_ratio
+import numpy as np
+
 from src.chaos import largest_lyapunov_exponent
+from src.complexity import dominant_frequency_ratio, spectral_entropy
 from src.data_quality import aggregate_quality_score
-from src.visualization import plot_3d_scatter, plot_2d_projection
+from src.utils import load_csv
+from src.visualization import plot_2d_projection, plot_3d_scatter
 
 logger = logging.getLogger(__name__), plot_2d_projection
 
@@ -33,7 +34,7 @@ def main():
         "--window-size", type=int, default=256, help="Window size for sliding analysis"
     )
     parser.add_argument(
-        "--embedding-dim", type=int, default=5, help="Embedding dimension for chaos metrics"
+        "--embedding-dim", type=int, default=5, help="Embedding dimension for chaotic behavior metrics"
     )
     parser.add_argument(
         "--delay", type=int, default=1, help="Delay for delay embedding"
@@ -101,7 +102,7 @@ def main():
             )
             print(f"3D scatterplot saved to {args.plot3d}")
         else:
-            logger.warning("Chaos metrics unavailable; creating 2D projection (complexity vs quality)")
+            logger.warning("Chaotic behavior metrics unavailable; creating 2D projection (complexity vs quality)")
             plot_2d_projection(
                 x_values=results_df["complexity"].values,
                 y_values=results_df["quality"].values,

@@ -18,7 +18,7 @@ The goal is to ingest a `.csv` of time series, compute complexity, chaos, and da
 
 - X-axis: complexity (e.g., spectral entropy, dominant frequency ratio)
 - Y-axis: data quality (aggregated profiling score)
-- Z-axis: chaos metric (e.g., largest Lyapunov exponent)
+- Z-axis: chaotic behavior metric (e.g., largest Lyapunov exponent)
 
 All results can optionally be exported as a `.csv` for downstream analysis. 2D projections (e.g., complexity vs. quality) can be provided as supplementary views.
 
@@ -29,7 +29,7 @@ All results can optionally be exported as a `.csv` for downstream analysis. 2D p
 - **/src**
 	- [src/main.py](src/main.py): entry point and pipeline orchestration
 	- [src/complexity.py](src/complexity.py): complexity metrics (spectral entropy, dominant frequency ratio)
-	- [src/chaos.py](src/chaos.py): chaos metrics (e.g., largest Lyapunov exponent via delay embedding)
+	- [src/chaos.py](src/chaos.py): chaotic behavior metrics (e.g., largest Lyapunov exponent via delay embedding)
 	- [src/data_quality.py](src/data_quality.py): profiling metrics (missingness, outliers, distribution stats)
 	- [src/visualization.py](src/visualization.py): 3D scatterplot rendering (plotly/matplotlib mplot3d) and 2D projections
 	- [src/utils.py](src/utils.py): helpers (CSV parsing, grouping, windowing)
@@ -95,11 +95,15 @@ timestamp,value
 
 Implemented in [src/complexity.py](src/complexity.py#L9):
 
-- **Method**: STL decomposition (removes trend/seasonality) → Hann windowing → one-sided FFT → power spectrum → Shannon entropy → predictability score
+- **Method**: LOESS detrending (removes trend) → Welch's method for PSD estimation (averaged periodograms with Hann windowing) → Shannon entropy → predictability score
 - **Output**: Float in [0, 1]
-  - Low values (0-0.3): Regular, predictable behavior
-  - High values (0.7-1.0): Complex, chaotic-looking spectra
-- **Formula**: Ω = 1 - H / log(2π) where H is normalized spectral entropy
+  - High values (0.7-1.0): Regular, concentrated frequency spectrum (predictable)
+  - Low values (0-0.3): Flat, dispersed spectrum (unpredictable/complex)
+- **Formula**: Ω = 1 - H / log(m) where H is spectral entropy, m is number of frequency bins
+- **Interpretation**: 
+  - Pure sine wave: high predictability (~0.5-0.7)
+  - White noise: low predictability (~0)
+  - Multi-frequency signals: intermediate predictability based on spectral concentration
 
 ### Chaos: Largest Lyapunov Exponent
 
@@ -218,6 +222,35 @@ uv run pytest -q
 - **Format/Lint**: choose tools (e.g., black, ruff) and add them via `uv add` as needed.
 
 - **Data**: `data/raw/` is preserved; other data folders are ignored by git.
+
+---
+
+## Validation with Synthetic Data
+
+Test the metrics on synthetic time series with increasing forecasting difficulty:
+
+```bash
+# Generate synthetic series and compute metrics
+uv run python examples/synthetic_validation.py
+```
+
+This creates interactive plots in `examples/synthetic_plots/`:
+1. Pure sine wave (simplest)
+2. Multi-frequency wave
+3. Noisy multi-frequency wave
+4. Lorenz system (chaotic)
+5. White noise (most complex)
+
+View the plots:
+
+```bash
+# Option 1: Open directly (browser)
+open examples/synthetic_plots/1_pure_sine.html
+
+# Option 2: Serve locally and view
+python -m http.server 8000
+# Then navigate to http://localhost:8000/examples/synthetic_plots/
+```
 
 ---
 

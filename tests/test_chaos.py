@@ -1,6 +1,7 @@
 """Unit tests for chaos metrics."""
 
 import pytest
+
 from src.chaos import largest_lyapunov_exponent
 
 

@@ -1,12 +1,14 @@
-"""Chaos metrics module.
+"""Chaotic behavior metrics module.
 
-Compute chaos metrics such as the largest Lyapunov exponent via delay embedding.
+Compute chaotic behavior metrics such as the largest Lyapunov exponent via delay embedding.
 """
 
 import logging
+
 import numpy as np
 from statsmodels.tsa.stattools import acf
-from utils import detrend_series
+
+from .utils import detrend_series
 
 logger = logging.getLogger(__name__)
 

@@ -1,14 +1,10 @@
 """Unit tests for data quality metrics."""
 
 import pytest
-from src.data_quality import (
-    missing_value_ratio,
-    outlier_count_ratio,
-    series_length,
-    distribution_stats,
-    unique_value_ratio,
-    aggregate_quality_score,
-)
+
+from src.data_quality import (aggregate_quality_score, distribution_stats,
+                              missing_value_ratio, outlier_count_ratio,
+                              series_length, unique_value_ratio)
 
 
 class TestMissingValueRatio:

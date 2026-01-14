@@ -2,23 +2,42 @@
 
 import numpy as np
 import pandas as pd
+from scipy.signal import detrend as scipy_detrend
+from statsmodels.nonparametric.smoothers_lowess import lowess
 from statsmodels.tsa.seasonal import STL
+from statsmodels.tsa.stattools import adfuller
 
+FRAC = 0.8
 
 def detrend_series(values):
-    """Apply STL decomposition to extract detrended residuals.
+    """Remove trend from time series using LOESS.
     
-    Removes both trend and seasonality from the time series.
+    Applies local weighted regression (LOESS) to remove the smooth trend
+    while preserving all periodic, seasonal, and oscillatory components.
+    These will be captured by complexity and chaos metrics naturally.
     
     Args:
         values: array-like, time series values
         
     Returns:
-        np.ndarray: detrended residuals
+        np.ndarray: detrended residuals (original - trend)
     """
     y = np.asarray(values, dtype=float)
-    result = STL(y).fit()
-    return result.resid
+    n = len(y)
+    
+    # For very short series, return as-is
+    if n < 4:
+        return y
+    
+    try:
+        # LOESS removes smooth trend while preserving all other structure
+        # Use larger frac to avoid over-smoothing (under-smoothing is safer)
+        loess_result = lowess(y, np.arange(n), frac=FRAC, it=0)
+        trend = loess_result[:, 1]
+        return y - trend
+    except Exception:
+        # Fallback: return original if LOESS fails
+        return y
 
 
 def load_csv(file_path):

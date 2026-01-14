@@ -4,15 +4,16 @@ Compute complexity metrics such as spectral entropy and dominant frequency ratio
 """
 
 import numpy as np
-from scipy import signal
+from scipy.signal import welch
+
 from .utils import detrend_series
 
 
 def spectral_entropy(values):
     """Compute spectral predictability (1 - normalized spectral entropy).
 
-    Uses STL decomposition to remove trend and seasonality, then applies a Hann
-    window to the residuals and computes the one-sided power spectrum via FFT.
+    Uses LOESS detrending to remove trend, then computes the power spectral
+    density using Welch's method (averaged periodograms with overlapping segments).
     Entropy is normalized and converted to predictability in [0, 1].
     Returns NaN for degenerate inputs.
     
@@ -27,24 +28,27 @@ def spectral_entropy(values):
     if n < 2 or not np.isfinite(y).all():
         return np.nan
 
-    # STL decomposition to extract residuals (detrended + deseasonalized)
+    # LOESS detrending to remove trend
     y_detrended = detrend_series(y)
 
-    # Apply Hann window to reduce spectral leakage
-    window = np.hanning(n)
-    yw = y_detrended * window
+    # Compute power spectral density using Welch's method
+    # This reduces noise by averaging periodograms of overlapping segments
+    # and automatically applies windowing (default: Hann window)
+    _, psd = welch(y_detrended, nperseg=min(256, n))
 
-    # One-sided power spectrum. For real-valued time series, the negative frequencies are mirror images of the positive ones and carry no additional information.
-    fft_vals = np.fft.rfft(yw)
-    power = np.abs(fft_vals) ** 2
-    power_sum = power.sum()
-
-    p = power / power_sum
-    eps = np.finfo(float).eps  # small epsilon to prevent taking log(0).
+    # Normalize to create probability distribution
+    power_sum = psd.sum()
+    
+    p = psd / power_sum
+    eps = np.finfo(float).eps  # small epsilon to prevent taking log(0)
+    
     # Spectral entropy using natural logarithm
     entropy = -np.sum(p * np.log(p + eps))
-    norm = np.log(2 * np.pi)
+    
+    # Maximum entropy for a uniform distribution over m frequency bins is log(m)
+    m = len(psd)
+    max_entropy = np.log(m)
 
-    predictability = 1.0 - entropy / norm
-    # Clamp to [0, 1] for numerical stability
-    return float(np.clip(predictability, 0.0, 1.0))
+    complexity = entropy / max_entropy
+    
+    return complexity
