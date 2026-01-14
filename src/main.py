@@ -1,14 +1,18 @@
 """Entry point and pipeline orchestration for the Time Series Profiler."""
 
 import argparse
+import logging
 import sys
+import numpy as np
 from pathlib import Path
 
 from src.utils import load_csv
 from src.complexity import spectral_entropy, dominant_frequency_ratio
 from src.chaos import largest_lyapunov_exponent
 from src.data_quality import aggregate_quality_score
-from src.visualization import plot_3d_scatter
+from src.visualization import plot_3d_scatter, plot_2d_projection
+
+logger = logging.getLogger(__name__), plot_2d_projection
 
 
 def main():
@@ -82,16 +86,31 @@ def main():
         print(f"Error exporting metrics: {e}", file=sys.stderr)
         sys.exit(1)
     
-    # Create 3D plot
+    # Create 3D plot or 2D projection if chaos unavailable
     try:
-        plot_3d_scatter(
-            complexity_values=results_df["complexity"].values,
-            quality_values=results_df["quality"].values,
-            chaos_values=results_df["chaos"].values,
-            series_ids=None,
-            output_path=args.plot3d,
-        )
-        print(f"3D scatterplot saved to {args.plot3d}")
+        # Check if chaos values are valid (not all NaN)
+        has_valid_chaos = np.isfinite(results_df["chaos"].values).any()
+        
+        if has_valid_chaos:
+            plot_3d_scatter(
+                complexity_values=results_df["complexity"].values,
+                quality_values=results_df["quality"].values,
+                chaos_values=results_df["chaos"].values,
+                series_ids=None,
+                output_path=args.plot3d,
+            )
+            print(f"3D scatterplot saved to {args.plot3d}")
+        else:
+            logger.warning("Chaos metrics unavailable; creating 2D projection (complexity vs quality)")
+            plot_2d_projection(
+                x_values=results_df["complexity"].values,
+                y_values=results_df["quality"].values,
+                series_ids=None,
+                output_path=args.plot3d,
+                x_label="Complexity",
+                y_label="Quality",
+            )
+            print(f"2D scatterplot (chaos unavailable) saved to {args.plot3d}")
     except Exception as e:
         print(f"Warning: Could not create plot: {e}", file=sys.stderr)
     

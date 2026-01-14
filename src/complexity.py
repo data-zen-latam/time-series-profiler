@@ -5,7 +5,7 @@ Compute complexity metrics such as spectral entropy and dominant frequency ratio
 
 import numpy as np
 from scipy import signal
-from statsmodels.tsa.seasonal import STL
+from .utils import detrend_series
 
 
 def spectral_entropy(values):
@@ -28,8 +28,7 @@ def spectral_entropy(values):
         return np.nan
 
     # STL decomposition to extract residuals (detrended + deseasonalized)
-    result = STL(y).fit()
-    y_detrended = result.resid
+    y_detrended = detrend_series(y)
 
     # Apply Hann window to reduce spectral leakage
     window = np.hanning(n)

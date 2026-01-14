@@ -1,6 +1,24 @@
 """Utility functions for parsing and preprocessing single time series data."""
 
+import numpy as np
 import pandas as pd
+from statsmodels.tsa.seasonal import STL
+
+
+def detrend_series(values):
+    """Apply STL decomposition to extract detrended residuals.
+    
+    Removes both trend and seasonality from the time series.
+    
+    Args:
+        values: array-like, time series values
+        
+    Returns:
+        np.ndarray: detrended residuals
+    """
+    y = np.asarray(values, dtype=float)
+    result = STL(y).fit()
+    return result.resid
 
 
 def load_csv(file_path):

@@ -89,18 +89,30 @@ timestamp,value
 
 ---
 
-## Complexity Metrics (Distinct from Chaos)
+## Implemented Metrics
 
-- **Spectral Predictability**
-	- Compute power spectrum via FFT
-	- Quantify regularity via spectral entropy or dominant frequency ratio
+### Complexity: Spectral Predictability
 
-## Chaos Metrics
+Implemented in [src/complexity.py](src/complexity.py#L9):
 
-- **Largest Lyapunov Exponent**
-	- Reconstruct phase space using delay embedding
-	- Estimate the exponent with standard algorithms
-	- Warn or fallback for short/sparse series
+- **Method**: STL decomposition (removes trend/seasonality) → Hann windowing → one-sided FFT → power spectrum → Shannon entropy → predictability score
+- **Output**: Float in [0, 1]
+  - Low values (0-0.3): Regular, predictable behavior
+  - High values (0.7-1.0): Complex, chaotic-looking spectra
+- **Formula**: Ω = 1 - H / log(2π) where H is normalized spectral entropy
+
+### Chaos: Largest Lyapunov Exponent
+
+Implemented in [src/chaos.py](src/chaos.py#L56):
+
+- **Method**: Time-delay embedding with auto-estimated delay (via ACF on detrended data) → nearest neighbor tracking → divergence estimation over fixed evolution steps → sigmoid transformation
+- **Output**: Float in [0, 1] (chaos score)
+  - < 0.5: Stable, regular behavior
+  - = 0.5: Neutral (λ = 0)
+  - > 0.5: Chaotic, unpredictable behavior
+- **Delay Estimation**: Automatic via autocorrelation, finds first lag where ACF < 0.3 or local minimum
+- **Data Requirements**: Minimum 100×m points (m = embedding dimension, default 5)
+- **Fallback**: Returns NaN if insufficient data; main.py switches to 2D plot (complexity vs quality)
 
 ---
 
@@ -135,35 +147,58 @@ timestamp,value
 
 ---
 
-## Run (Planned CLI)
+## Run (CLI)
 
-The following interface will be implemented in [src/main.py](src/main.py):
+The CLI is implemented in [src/main.py](src/main.py):
 
 ```bash
-# Basic run
-uv run python src/main.py \
+# Basic run (single series CSV)
+uv run python -m src.main \
 	--input data/raw/sales_train_validation.csv \
 	--output reports/metrics.csv \
 	--plot3d reports/scatter3d.html
 
-# Options (subject to change during development)
-uv run python src/main.py \
-	--window-size 256 \
+# Full options
+uv run python -m src.main \
+	--input data/raw/series.csv \
+	--output reports/metrics.csv \
+	--plot3d reports/scatter3d.html \
 	--embedding-dim 5 \
-	--delay 2 \
-	--projection xy  # show 2D projection (xy, xz, yz)
-	--interactive
+	--window-size 256
 ```
 
----
-
-## Extensions
-
-- Sliding window analysis for non-stationary series
-- Automated model selection or anomaly detection integration
-- Alternate frontends: CLI and simple web UI
+**Behavior**:
+- Computes complexity (spectral entropy), chaos (Lyapunov exponent), and data quality metrics
+- Exports metrics to CSV
+- Creates 3D scatterplot (complexity vs quality vs chaos)
+- If chaos unavailable (NaN), falls back to 2D plot (complexity vs quality) with warning logged
 
 ---
+
+## Utilities
+
+[src/utils.py](src/utils.py) provides:
+
+- **`load_csv(file_path)`**: Load CSV file
+- **`detrend_series(values)`**: STL decomposition to extract residuals (trend + seasonality removed)
+
+## Development Status
+
+**Completed**:
+- ✅ Spectral entropy with STL detrending
+- ✅ Largest Lyapunov exponent with auto delay estimation
+- ✅ 3D scatterplot with 2D fallback
+- ✅ CLI pipeline in main.py
+
+**In Progress**:
+- ⊙ Data quality metrics (quality.py stubs)
+- ⊙ Visualization functions (visualization.py stubs)
+- ⊙ Unit tests
+
+**Planned**:
+- Sliding window analysis
+- Automated anomaly detection
+- Web UI
 
 ## Data Transparency
 
