@@ -24,71 +24,17 @@ from scipy.signal import welch
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from generators import (
+    generate_constant,
+    generate_lorenz,
+    generate_multi_frequency,
+    generate_noisy_multi_frequency,
+    generate_sine_wave,
+    generate_white_noise,
+)
 from src.chaos import largest_lyapunov_exponent
 from src.complexity import spectral_entropy
 from src.utils import detrend_series
-
-
-def generate_sine_wave(n=1000, freq=0.1):
-    """Pure sine wave - simplest, most predictable."""
-    t = np.arange(n)
-    return np.sin(2 * np.pi * freq * t)
-
-
-def generate_constant(n=1000, value=0.0):
-    """Constant value - no dynamics, should have negative lambda."""
-    return np.full(n, value)
-
-
-def generate_multi_frequency(n=1000, freqs=[0.05, 0.1, 0.15]):
-    """Multi-frequency wave - more complex spectrum but still periodic."""
-    t = np.arange(n)
-    signal = np.zeros(n)
-    for freq in freqs:
-        signal += np.sin(2 * np.pi * freq * t)
-    return signal / len(freqs)
-
-
-def generate_noisy_multi_frequency(n=1000, freqs=[0.05, 0.1, 0.15], noise_std=0.05):
-    """Noisy multi-frequency - complex + small stochastic component."""
-    signal = generate_multi_frequency(n, freqs)
-    noise = np.random.normal(0, noise_std, n)
-    return signal + noise
-
-
-def generate_lorenz(n=1000, dt=0.02, sigma=15, rho=28, beta=8/3):
-    """Lorenz system - highly chaotic attractor.
-    
-    Args:
-        n: number of samples
-        dt: time step - larger dt = more chaotic behavior
-        sigma: parameter
-        rho: parameter - larger rho = more chaotic
-        beta: parameter
-    """
-    # Initial conditions
-    x, y, z = 0.0, 1.0, 1.05
-    
-    trajectory = np.zeros(n)
-    
-    for i in range(n):
-        # Lorenz equations
-        dx = sigma * (y - x)
-        dy = x * (rho - z) - y
-        dz = x * y - beta * z
-        
-        x += dx * dt
-        y += dy * dt
-        z += dz * dt
-        
-        trajectory[i] = x  # Use x component as time series
-    
-    return trajectory
-
-
-def generate_white_noise(n=1000):
-    """White noise - maximum unpredictability."""
-    return np.random.normal(0, 1, n)
 
 
 def main():
@@ -152,8 +98,8 @@ def main():
     print()
     print("Expected behavior:")
     print("  - Complexity and chaotic behaviour scores should increase from series (1) to (5)")
-    print("  - (4) Lorenz should show high chaos score (>0.5)")
-    print("  - (1) Pure sine should show low complexity and chaos (<0.3)")
+    print("  - (4) Lorenz should show high chaos score")
+    print("  - (1) Pure sine should show low complexity and chaos")
     print()
     
     # Create combined visualization with time series, PSDs, and metrics
@@ -169,6 +115,16 @@ def main():
         horizontal_spacing=0.12
     )
     
+    # Colorblind-friendly palette (Okabe-Ito) to match 3D plot
+    colors = [
+        '#0173B2',  # Constant
+        '#029E73',  # Pure Sine
+        '#DE8F05',  # Multi-Frequency
+        '#CC78BC',  # Noisy Multi-Freq
+        '#CA9161',  # Lorenz System
+        '#56B4E9',  # White Noise
+    ]
+    
     for idx, (name, series) in enumerate(series_list):
         row = idx + 1
         
@@ -178,17 +134,12 @@ def main():
         # Compute PSD
         freqs, psd = welch(series_detrended, nperseg=min(256, len(series)))
         
-        # Normalize to probabilities
-        p = psd / psd.sum()
-        
-        # Compute entropy
-        entropy = -np.sum(p * np.log(p + np.finfo(float).eps))
-        max_entropy = np.log(len(psd))
-        complexity = entropy / max_entropy
+        # Get precomputed complexity from results
+        complexity = results[idx]["complexity"]
         
         # Time series plot (left column)
         fig.add_trace(
-            go.Scatter(y=series_detrended, mode='lines', line=dict(width=1),
+            go.Scatter(y=series_detrended, mode='lines', line=dict(width=1, color=colors[idx]),
                        name=f'{name} - Time Series', showlegend=False),
             row=row, col=1
         )
@@ -196,8 +147,8 @@ def main():
         
         # PSD plot (right column) - log scale
         fig.add_trace(
-            go.Scatter(x=freqs, y=psd, mode='lines', line=dict(width=1.5),
-                       name=f'C={complexity:.3f}', 
+            go.Scatter(x=freqs, y=psd, mode='lines', line=dict(width=1.5, color=colors[idx]),
+                       name=f'C={results[idx]["complexity"]:.3f}', 
                        showlegend=False),
             row=row, col=2
         )

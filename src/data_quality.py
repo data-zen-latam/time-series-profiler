@@ -36,7 +36,7 @@ def outlier_count_ratio(values, threshold=3.0):
     values = np.asarray(values, dtype=float)
     valid = values[np.isfinite(values)]
     
-    if len(valid) == 0:
+    if len(valid) == 0 or np.std(valid) == 0:
         return 0.0
     
     z_scores = np.abs((valid - np.mean(valid)) / np.std(valid))
