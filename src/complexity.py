@@ -39,6 +39,10 @@ def spectral_entropy(values):
     # Normalize to create probability distribution
     power_sum = psd.sum()
     
+    # Constant signal has zero power → zero complexity
+    if power_sum == 0:
+        return 0.0
+    
     p = psd / power_sum
     eps = np.finfo(float).eps  # small epsilon to prevent taking log(0)
     

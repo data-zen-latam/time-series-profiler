@@ -35,6 +35,11 @@ def generate_sine_wave(n=1000, freq=0.1):
     return np.sin(2 * np.pi * freq * t)
 
 
+def generate_constant(n=1000, value=0.0):
+    """Constant value - no dynamics, should have negative lambda."""
+    return np.full(n, value)
+
+
 def generate_multi_frequency(n=1000, freqs=[0.05, 0.1, 0.15]):
     """Multi-frequency wave - more complex spectrum but still periodic."""
     t = np.arange(n)
@@ -95,6 +100,7 @@ def main():
     
     # Generate all segments
     segments = {
+        "0. Constant (0)": generate_constant(),
         "1. Pure Sine": generate_sine_wave(),
         "2. Multi-Frequency": generate_multi_frequency(),
         "3. Noisy Multi-Freq": generate_noisy_multi_frequency(),
@@ -157,7 +163,7 @@ def main():
         titles.append(f'{name.split(".")[1].strip()}<br>PSD')
     
     fig = make_subplots(
-        rows=5, cols=2,
+        rows=len(series_list), cols=2,
         subplot_titles=titles,
         vertical_spacing=0.08,
         horizontal_spacing=0.12

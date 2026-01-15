@@ -31,6 +31,10 @@ def _estimate_delay_autocorrelation(y, threshold=0.3):
     # Detrend to remove trend and seasonality before computing ACF
     y_detrended = detrend_series(y)
     
+    # Guard against constant/zero-variance series
+    if np.std(y_detrended) == 0:
+        return 1
+    
     n = len(y_detrended)
     max_lag = min(100, n // 4)  # Heuristic. Don't search beyond 1/4 of series length.
     
@@ -77,6 +81,10 @@ def cao_e1_e2(time_series, max_dim=9, tau=None):
 
     if tau is None:
         tau = max(1, _estimate_delay_autocorrelation(time_series))
+
+    # Guard against constant/zero-variance series
+    if np.std(time_series) == 0:
+        return np.full(max_dim - 1, np.nan), np.full(max_dim - 1, np.nan)
 
     N = len(time_series)
     E1_raw = []
@@ -151,7 +159,7 @@ def estimate_embedding_dimension_cao(y, max_dim=10, tau=None, e1_threshold=1.1):
     
     E1, _ = cao_e1_e2(y, max_dim=max_dim, tau=tau)
     
-    if E1.size == 0:
+    if E1.size == 0 or np.all(np.isnan(E1)):
         return 2
 
     # E1[i] corresponds to ratio E(m=i+2)/E(m=i+1); plateau at i -> embedding dimension i+2
@@ -198,6 +206,10 @@ def largest_lyapunov_exponent(values, embedding_dim=None, delay=None, evolution_
     
     if not np.isfinite(y).all():
         return np.nan
+    
+    # Guard against constant/zero-variance series
+    if np.std(y) == 0:
+        return 0.0  # Constant series is maximally stable (λ ≤ 0)
     
     # Auto-estimate evolution_steps as percentage of series length if not specified
     if evolution_steps is None:
