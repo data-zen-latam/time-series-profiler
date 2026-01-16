@@ -15,7 +15,7 @@ The validation scripts generate six synthetic series with increasing complexity 
    - Expected: Medium complexity, low chaos
 
 3. **Noisy Multi-Frequency**: Multi-frequency signal + small stochastic component
-   - Signal with additive noise (SNR ≈ 10)
+   - Signal with additive noise (SNR ≈ 20)
    - Expected: Medium-high complexity, low chaos
 
 4. **Lorenz System**: Chaotic attractor trajectory
@@ -71,7 +71,7 @@ Series                    Complexity      Chaos
 
 2) 3D Metric Space (Data Quality vs Complexity vs Chaos): `output/metric_space_3d.html`
    - Points colored via Okabe–Ito palette; size/opacity variations for redundancy
-   - Light grey grid (visible) and camera oriented to show origin in lower-left
+   - Light grey grid
 
 ## Metrics Explanation
 
@@ -79,8 +79,8 @@ Series                    Complexity      Chaos
 
 **Range**: [0, 1]
 
-- **Higher values**: Dispersed spectrum (higher complexity)
-- **Lower values**: Concentrated spectrum (lower complexity)
+- **Higher values**: Dispersed frequency spectrum (higher complexity)
+- **Lower values**: Concentrated frequency spectrum (lower complexity)
 
 Computed using:
 1. LOESS detrending to remove trend component
@@ -90,17 +90,19 @@ Computed using:
 
 ### Chaos (Chaotic Behavior)
 
-**Range**: [0, 1]
+**Largest Lyapunov Exponent (λ_max)** measures the rate at which nearby trajectories in phase space diverge over time:
+- **λ > 0**: Chaotic system (exponential divergence, sensitive to initial conditions)
+- **λ = 0**: Neutral/marginally stable
+- **λ < 0**: Stable system (trajectories converge)
 
-- **< 0.5**: Stable, regular behavior
-- **= 0.5**: Neutral (zero Lyapunov exponent)
-- **> 0.5**: Chaotic, divergent trajectories
+The exponent quantifies how fast initial uncertainty grows—a hallmark of chaos. For a time series, we reconstruct the phase space using delay embedding and track how nearest neighbors separate.
+
+**Reference**: Wolf, A., et al. (1985). "Determining Lyapunov exponents from a time series." *Physica D*, 16(3), 285-317.
 
 Computed using:
 1. Automatic delay estimation via autocorrelation
 2. Time-delay embedding with auto-estimated embedding dimension (Cao's method)
 3. Largest Lyapunov exponent via nearest neighbor divergence
-4. Guarded for constant/degenerate series (returns 0)
 
 ## Expected Behavior
 
@@ -108,8 +110,8 @@ Ideally, metrics should show:
 
 - Complexity increasing from series 1 → 5
 - Chaos increasing from series 1 → 5
-- Series 4 (Lorenz) showing notably high chaos (>0.5)
-- Series 1 (Pure sine) showing low values for both metrics (<0.3)
+- Series 4 (Lorenz) showing notably high chaos
+- Series 1 (Pure sine) showing low values for both metrics
 
 ## Viewing Results
 
