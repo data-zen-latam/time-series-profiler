@@ -16,9 +16,9 @@ Classify time series by (forecastability)[https://arxiv.org/html/2507.13556v1] a
 
 The goal is to ingest a `.csv` of time series, compute complexity, chaos, and data quality metrics per series, and produce a 3D scatterplot:
 
-- X-axis: complexity (e.g., spectral entropy, dominant frequency ratio)
-- Y-axis: data quality (aggregated profiling score)
-- Z-axis: chaotic behavior metric (e.g., largest Lyapunov exponent)
+- X-axis: data quality (aggregated profiling score)
+- Y-axis: complexity (spectral entropy)
+- Z-axis: chaotic behavior (largest Lyapunov exponent)
 
 All results can optionally be exported as a `.csv` for downstream analysis. 2D projections (e.g., complexity vs. quality) can be provided as supplementary views.
 
@@ -64,7 +64,6 @@ To add dependencies as development progresses:
 ```bash
 # Examples (adjust as modules land)
 uv add numpy pandas scipy matplotlib seaborn plotly
-uv add ydata-profiling
 uv add scikit-learn
 uv sync
 ```
@@ -93,43 +92,38 @@ timestamp,value
 
 ### Complexity: Spectral Predictability
 
-Implemented in [src/complexity.py](src/complexity.py#L9):
+Implemented in [src/complexity.py](src/complexity.py):
 
-- **Method**: LOESS detrending (removes trend) → Welch's method for PSD estimation (averaged periodograms with Hann windowing) → Shannon entropy → predictability score
+- **Method**: LOESS detrending (removes trend) → Welch's method for PSD estimation (averaged periodograms with Hann windowing) → Shannon entropy → normalized entropy
 - **Output**: Float in [0, 1]
-  - High values (0.7-1.0): Regular, concentrated frequency spectrum (predictable)
-  - Low values (0-0.3): Flat, dispersed spectrum (unpredictable/complex)
-- **Formula**: Ω = 1 - H / log(m) where H is spectral entropy, m is number of frequency bins
+	- Higher values: More dispersed spectrum (higher complexity)
+	- Lower values: Concentrated spectrum (lower complexity)
+- **Formula**: C = H / log(m) where H is spectral entropy, m is number of frequency bins
 - **Interpretation**: 
-  - Pure sine wave: high predictability (~0.5-0.7)
-  - White noise: low predictability (~0)
-  - Multi-frequency signals: intermediate predictability based on spectral concentration
+	- Pure sine wave: low complexity
+	- White noise: highest complexity
+	- Multi-frequency signals: medium complexity
 
 ### Chaos: Largest Lyapunov Exponent
 
-Implemented in [src/chaos.py](src/chaos.py#L56):
+Implemented in [src/chaos.py](src/chaos.py):
 
-- **Method**: Time-delay embedding with auto-estimated delay (via ACF on detrended data) → nearest neighbor tracking → divergence estimation over fixed evolution steps → sigmoid transformation
-- **Output**: Float in [0, 1] (chaos score)
-  - < 0.5: Stable, regular behavior
-  - = 0.5: Neutral (λ = 0)
-  - > 0.5: Chaotic, unpredictable behavior
-- **Delay Estimation**: Automatic via autocorrelation, finds first lag where ACF < 0.3 or local minimum
-- **Data Requirements**: Minimum 100×m points (m = embedding dimension, default 5)
-- **Fallback**: Returns NaN if insufficient data; main.py switches to 2D plot (complexity vs quality)
+- **Method**: Time-delay embedding with auto-estimated delay (ACF on detrended data) → nearest neighbor tracking → divergence estimation over fixed evolution steps
+- **Output**: Float chaos score (scaled λa, guard for constant/degenerate series)
+- **Delay Estimation**: Automatic via autocorrelation; first lag below a threshold or local minimum
+- **Embedding Dimension**: Auto-estimated via Cao's method (E1/E2 plateau detection)
+- **Data Requirements**: Guarded for short/degenerate inputs; returns NaN when unreliable
 
 ---
 
 ## Data Quality Profiling
 
-- Use a profiling library (e.g., ydata-profiling) or custom aggregations
-- Extract per-series metrics:
-	- Missing value ratio
-	- Outlier count ratio
-	- Series length > 100 obs
-	- Distribution stats (mean, std, skewness, kurtosis)
-    - Unique value ratio
-- Aggregate into a single **data quality score** (e.g., weighted sum or PCA)
+Custom aggregations implemented:
+- Missing value ratio
+- Outlier count ratio (z-score based; guarded against zero variance)
+- Distribution stats (mean, std, skewness, kurtosis)
+- Unique value ratio
+- Aggregation: (1 - missing) * (1 - outlier) * unique_ratio → clamped to [0, 1]
 
 ---
 
@@ -151,31 +145,22 @@ Implemented in [src/chaos.py](src/chaos.py#L56):
 
 ---
 
-## Run (CLI)
-
-The CLI is implemented in [src/main.py](src/main.py):
+## Quick Start (Examples)
 
 ```bash
-# Basic run (single series CSV)
-uv run python -m src.main \
-	--input data/raw/sales_train_validation.csv \
-	--output reports/metrics.csv \
-	--plot3d reports/scatter3d.html
+# Activate virtual environment
+source .venv/bin/activate
 
-# Full options
-uv run python -m src.main \
-	--input data/raw/series.csv \
-	--output reports/metrics.csv \
-	--plot3d reports/scatter3d.html \
-	--embedding-dim 5 \
-	--window-size 256
+# 1) Synthetic validation table + time series & PSD plots
+python examples/synthetic_data_validation/validate.py
+
+# 2) 3D metric space (Data Quality vs Complexity vs Chaos)
+python examples/synthetic_data_validation/plot_metric_space_3d.py
+
+# Optional: serve outputs in browser
+python -m http.server 8000
+# Visit: http://localhost:8000/examples/synthetic_data_validation/output/
 ```
-
-**Behavior**:
-- Computes complexity (spectral entropy), chaos (Lyapunov exponent), and data quality metrics
-- Exports metrics to CSV
-- Creates 3D scatterplot (complexity vs quality vs chaos)
-- If chaos unavailable (NaN), falls back to 2D plot (complexity vs quality) with warning logged
 
 ---
 
@@ -227,30 +212,14 @@ uv run pytest -q
 
 ## Validation with Synthetic Data
 
-Test the metrics on synthetic time series with increasing forecasting difficulty:
+Two example scripts demonstrate the metrics and visualizations:
 
-```bash
-# Generate synthetic series and compute metrics
-uv run python examples/synthetic_validation.py
-```
-
-This creates interactive plots in `examples/synthetic_plots/`:
-1. Pure sine wave (simplest)
-2. Multi-frequency wave
-3. Noisy multi-frequency wave
-4. Lorenz system (chaotic)
-5. White noise (most complex)
-
-View the plots:
-
-```bash
-# Option 1: Open directly (browser)
-open examples/synthetic_plots/1_pure_sine.html
-
-# Option 2: Serve locally and view
-python -m http.server 8000
-# Then navigate to http://localhost:8000/examples/synthetic_plots/
-```
+- `examples/synthetic_data_validation/validate.py`
+	- Prints a metrics table (Complexity, Chaos) for six synthetic series
+	- Saves a combined HTML with detrended series and PSDs
+- `examples/synthetic_data_validation/plot_metric_space_3d.py`
+	- Plots each series as a point in 3D (Data Quality, Complexity, Chaos)
+	- Uses a colorblind-friendly Okabe–Ito palette and visible grid for depth
 
 ---
 

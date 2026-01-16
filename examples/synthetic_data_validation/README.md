@@ -1,10 +1,10 @@
 # Synthetic Data Validation Example
 
-This example demonstrates the time-series profiler metrics on five synthetic time series with known properties and complexity characteristics.
+This example demonstrates the time-series profiler metrics on synthetic time series with known properties and complexity characteristics.
 
 ## Overview
 
-The validation script generates five synthetic series with increasing complexity and chaotic behavior:
+The validation scripts generate six synthetic series with increasing complexity and chaotic behavior:
 
 1. **Pure Sine Wave**: Simplest, most predictable series
    - Single frequency component
@@ -26,9 +26,18 @@ The validation script generates five synthetic series with increasing complexity
    - Maximum unpredictability, flat frequency spectrum
    - Expected: Highest complexity, variable chaos
 
+6. **Constant (0)**: Degenerate signal (sanity check)
+   - No variation, zero entropy
+   - Expected: Zero complexity, zero chaos
+
 ## Running the Validation
 
 ```bash
+# Create and sync env with uv (from repo root)
+uv venv .venv
+uv sync
+
+# Run validation (table + series/PSD plots)
 uv run python examples/synthetic_data_validation/validate.py
 ```
 
@@ -53,14 +62,16 @@ Series                    Complexity      Chaos
 ----------------------------------------------------------------------
 ```
 
-### Visualization
+### Visualizations
 
-Generates an interactive HTML file: `output/series_plots_and_psds.html`
+1) Combined detrended series + PSDs: `output/series_plots_and_psds.html`
+   - Left: Detrended series
+   - Right: Power Spectral Density (log scale)
+   - Colorblind-friendly Okabe–Ito palette applied consistently
 
-Contains:
-- **Left column**: Detrended time series for each synthetic series
-- **Right column**: Power Spectral Density (PSD) plots in log scale
-- Hover tooltips with spectral entropy and predictability metrics
+2) 3D Metric Space (Data Quality vs Complexity vs Chaos): `output/metric_space_3d.html`
+   - Points colored via Okabe–Ito palette; size/opacity variations for redundancy
+   - Light grey grid (visible) and camera oriented to show origin in lower-left
 
 ## Metrics Explanation
 
@@ -68,8 +79,8 @@ Contains:
 
 **Range**: [0, 1]
 
-- **High values (0.7-1.0)**: Regular, concentrated frequency spectrum (predictable)
-- **Low values (0-0.3)**: Flat, dispersed spectrum (unpredictable/complex)
+- **Higher values**: Dispersed spectrum (higher complexity)
+- **Lower values**: Concentrated spectrum (lower complexity)
 
 Computed using:
 1. LOESS detrending to remove trend component
@@ -87,9 +98,9 @@ Computed using:
 
 Computed using:
 1. Automatic delay estimation via autocorrelation
-2. Time-delay embedding (dimension m = 5)
+2. Time-delay embedding with auto-estimated embedding dimension (Cao's method)
 3. Largest Lyapunov exponent via nearest neighbor divergence
-4. Sigmoid transformation to [0, 1] range
+4. Guarded for constant/degenerate series (returns 0)
 
 ## Expected Behavior
 
@@ -106,10 +117,11 @@ To view the generated HTML plot in a browser:
 
 ```bash
 # Option 1: Using Python's built-in server
-python -m http.server 8000 --directory examples/synthetic_data_validation/output
+python -m http.server 8000
 
-# Option 2: Open directly in a browser
-open examples/synthetic_data_validation/output/series_plots_and_psds.html
+# Option 2: Open directly in a browser (paths may vary by OS)
+# macOS: open examples/synthetic_data_validation/output/series_plots_and_psds.html
+# Linux: xdg-open examples/synthetic_data_validation/output/series_plots_and_psds.html
 ```
 
-Then navigate to: `http://localhost:8000/series_plots_and_psds.html`
+Then navigate to: `http://localhost:8000/examples/synthetic_data_validation/output/`
