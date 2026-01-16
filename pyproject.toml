@@ -3,7 +3,8 @@ name = "ts-profiler"
 version = "0.0.1"
 description = "Time series profiling workspace"
 authors = [
-  { name = "Sergio M. Ferro" }
+  { name = "Sergio M. Ferro", email = "Sergio_Ferro@epam.com" },
+  { name = "Carlo Arias", email = "Carlo_Arias@epam.com" }
 ]
 requires-python = ">=3.9"
 dependencies = [

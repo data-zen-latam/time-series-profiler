@@ -2,14 +2,6 @@
 
 Classify time series by (forecastability)[https://arxiv.org/html/2507.13556v1] as defined in AWS' "Time Series Forecastability Measures". Also gives statistics on data quality, and visualize results in a 3D scatterplot, treating data quality as one dimension, frequency complexity as another one, and chaotic behavior as the final one. This repository uses uv for virtual environment and dependency management.
 
-## Contents
-
-- Overview of goals and metrics
-- Planned repository structure and workflow
-- uv setup and run instructions
-- Input format, pipeline, and outputs
-- Extensions and data transparency notes
-
 ---
 
 ## Overview
@@ -39,9 +31,6 @@ All results can optionally be exported as a `.csv` for downstream analysis. 2D p
 	- Example scripts that run the pipeline using data in `data/raw/` (data files are not tracked; download locally)
 - [README.md](README.md)
 	- Usage, design, and metric explanations
-
-Note: This structure is planned. Files will be added as modules are implemented.
-
 ---
 
 ## Setup (uv)
@@ -68,26 +57,6 @@ uv add scikit-learn
 uv sync
 ```
 
----
-
-## Input Format
-
-**Required** CSV columns:
-
-- **timestamp**: time index (parseable as datetime or numeric)
-- **value**: observed value
-
-Example (single series):
-
-```csv
-timestamp,value
-2024-01-01,0.12
-2024-01-02,0.15
-2024-01-03,0.18
-```
-
----
-
 ## Implemented Metrics
 
 ### Complexity: Spectral Predictability
@@ -98,7 +67,7 @@ Implemented in [src/complexity.py](src/complexity.py):
 - **Output**: Float in [0, 1]
 	- Higher values: More dispersed spectrum (higher complexity)
 	- Lower values: Concentrated spectrum (lower complexity)
-- **Formula**: C = H / log(m) where H is spectral entropy, m is number of frequency bins
+- **Formula**: C = H / log(m) where H is spectral entropy, m is the number of frequency bins
 - **Interpretation**: 
 	- Pure sine wave: low complexity
 	- White noise: highest complexity
@@ -112,7 +81,7 @@ Implemented in [src/chaos.py](src/chaos.py):
 - **Output**: Float chaos score (scaled λa, guard for constant/degenerate series)
 - **Delay Estimation**: Automatic via autocorrelation; first lag below a threshold or local minimum
 - **Embedding Dimension**: Auto-estimated via Cao's method (E1/E2 plateau detection)
-- **Data Requirements**: Guarded for short/degenerate inputs; returns NaN when unreliable
+- **Data Requirements**: Accounts for short/degenerate inputs; returns NaN when unreliable
 
 ---
 
@@ -127,21 +96,10 @@ Custom aggregations implemented:
 
 ---
 
-## Pipeline
-
-1. **Input**: Read `.csv` with columns (`timestamp`, `value`)
-2. **Preprocessing**: Parse and validate types
-3. **Metric Calculation**: Compute complexity, chaos, and data quality (kept separate)
-4. **Visualization**: Create 3D scatterplot (x: complexity, y: data quality, z: chaos). Provide 2D projections optionally.
-5. **Export**: Optional `.csv` with all metrics
-
----
-
 ## Outputs
 
 - **3D scatterplot**: Interactive HTML + JavaScript (via Plotly), browser-viewable with rotation, zoom, hover tooltips
 - Optional 2D projections (static or interactive) for specific pairs (e.g., complexity vs. quality)
-- Optional metrics table as `.csv`
 
 ---
 
@@ -168,45 +126,29 @@ python -m http.server 8000
 
 [src/utils.py](src/utils.py) provides:
 
-- **`load_csv(file_path)`**: Load CSV file
-- **`detrend_series(values)`**: STL decomposition to extract residuals (trend + seasonality removed)
+- **`detrend_series(values)`**: LOESS detrending to remove smooth trends while preserving oscillatory components
+- **`load_csv(file_path)`**: Load CSV into DataFrame (basic wrapper)
 
-## Development Status
+## Testing
 
-**Completed**:
-- ✅ Spectral entropy with STL detrending
-- ✅ Largest Lyapunov exponent with auto delay estimation
-- ✅ 3D scatterplot with 2D fallback
-- ✅ CLI pipeline in main.py
-
-**In Progress**:
-- ⊙ Data quality metrics (quality.py stubs)
-- ⊙ Visualization functions (visualization.py stubs)
-- ⊙ Unit tests
-
-**Planned**:
-- Sliding window analysis
-- Automated anomaly detection
-- Web UI
-
-## Data Transparency
-
-- Clearly mark series with estimated or unreliable metrics (e.g., short/sparse)
-- Include a legend and data source summary in the plot
-
----
-
-## Development
-
-- **Testing**: add unit tests under [tests](tests). Example commands:
+Run the test suite:
 
 ```bash
-uv run pytest -q
+# All tests
+uv run pytest -v
+
+# Specific module
+uv run pytest tests/test_chaos.py -v
+
+# With coverage
+uv run pytest --cov=src --cov-report=html
 ```
 
-- **Format/Lint**: choose tools (e.g., black, ruff) and add them via `uv add` as needed.
-
-- **Data**: `data/raw/` is preserved; other data folders are ignored by git.
+**Test Statistics:**
+- 82 tests across 3 modules (chaos, complexity, data_quality)
+- 74% overall coverage
+- 100% pass rate
+- CI/CD via GitHub Actions (triggers on main branch changes)
 
 ---
 

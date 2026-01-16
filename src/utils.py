@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from scipy.signal import detrend as scipy_detrend
 from statsmodels.nonparametric.smoothers_lowess import lowess
-from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import adfuller
 
 FRAC = 0.8
