@@ -3,9 +3,8 @@
 Render 3D and 2D scatterplots using Plotly.
 """
 
-import plotly.graph_objects as go
 import numpy as np
-
+import plotly.graph_objects as go
 
 # Okabe-Ito colorblind-friendly palette
 OKABE_ITO_COLORS = [

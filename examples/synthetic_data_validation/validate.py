@@ -24,14 +24,11 @@ from scipy.signal import welch
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from generators import (
-    generate_constant,
-    generate_lorenz,
-    generate_multi_frequency,
-    generate_noisy_multi_frequency,
-    generate_sine_wave,
-    generate_white_noise,
-)
+from generators import (generate_constant, generate_lorenz,
+                        generate_multi_frequency,
+                        generate_noisy_multi_frequency, generate_sine_wave,
+                        generate_white_noise)
+
 from src.chaos import largest_lyapunov_exponent
 from src.complexity import spectral_entropy
 from src.utils import detrend_series

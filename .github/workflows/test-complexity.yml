@@ -1,0 +1,55 @@
+name: Test Complexity Module
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/complexity.py'
+      - 'tests/test_complexity.py'
+      - 'tests/conftest.py'
+      - 'pyproject.toml'
+      - '.github/workflows/test-complexity.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/complexity.py'
+      - 'tests/test_complexity.py'
+      - 'tests/conftest.py'
+      - 'pyproject.toml'
+
+jobs:
+  test-complexity:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Run Complexity Tests
+        run: uv run pytest tests/test_complexity.py -v --tb=short
+      
+      - name: Run Complexity Coverage
+        run: uv run pytest tests/test_complexity.py --cov=src.complexity --cov-report=xml --cov-report=term-missing
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: complexity
+          fail_ci_if_error: false
