@@ -1,0 +1,55 @@
+name: Test Chaos Module
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/chaos.py'
+      - 'tests/test_chaos.py'
+      - 'tests/conftest.py'
+      - 'pyproject.toml'
+      - '.github/workflows/test-chaos.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/chaos.py'
+      - 'tests/test_chaos.py'
+      - 'tests/conftest.py'
+      - 'pyproject.toml'
+
+jobs:
+  test-chaos:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Run Chaos Tests
+        run: uv run pytest tests/test_chaos.py -v --tb=short
+      
+      - name: Run Chaos Coverage
+        run: uv run pytest tests/test_chaos.py --cov=src.chaos --cov-report=xml --cov-report=term-missing
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: chaos
+          fail_ci_if_error: false
