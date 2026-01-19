@@ -23,7 +23,7 @@ from generators import (generate_constant, generate_lorenz,
 from src.chaos import largest_lyapunov_exponent
 from src.complexity import spectral_entropy
 from src.data_quality import aggregate_quality_score
-from src.visualization import plot_3d_scatter
+from src.visualization import plot_3d_scatter, plot_3d_with_radar
 
 
 def main():
@@ -71,13 +71,21 @@ def main():
     output_file = Path(__file__).parent / 'output' / 'metric_space_3d.html'
     output_file.parent.mkdir(parents=True, exist_ok=True)
     
-    plot_3d_scatter(
+    # Prepare radar data (one entry per series)
+    radar_metric_sets = [
+        {'Quality': q, 'Complexity': c, 'Chaos': h}
+        for q, c, h in zip(quality_scores, complexity_scores, chaos_scores)
+    ]
+    
+    plot_3d_with_radar(
         quality_scores,
         complexity_scores,
         chaos_scores,
         title='<b>3D Metric Space: Series Characterization</b><br>' +
               '<sub>Data Quality vs Complexity vs Chaotic Behavior</sub>',
         series_ids=names,
+        radar_metric_sets=radar_metric_sets,
+        radar_labels=names,
         output_path=str(output_file)
     )
     print(f"✓ 3D metric space visualization saved to: {output_file.absolute()}")
