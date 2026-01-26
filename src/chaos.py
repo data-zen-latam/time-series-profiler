@@ -1,6 +1,7 @@
 """Chaotic behavior metrics module.
 
 Compute chaotic behavior metrics such as the largest Lyapunov exponent via delay embedding.
+Provides a normalized chaos score via a sigmoid transform for visualization.
 """
 
 import logging
@@ -13,6 +14,56 @@ from .utils import detrend_series
 logger = logging.getLogger(__name__)
 
 MIN_STATES_FOR_LYAPUNOV = 10
+
+
+def chaos_sigmoid(x, steepness=2.0):
+    """Map Lyapunov exponent values to [0, 1] via a sigmoid.
+
+    Uses an increasing logistic function centered at x=0:
+        s(x) = 1 / (1 + exp(-k * x))
+
+    where `k` (steepness) controls the slope near x=0. A larger `k`
+    yields a sharper transition around zero, helping radar charts
+    separate non-chaotic (x <= 0) from chaotic (x > 0) series.
+
+    Args:
+        x: float or array-like, Lyapunov exponent(s)
+        steepness: float, k parameter for sigmoid (default: 2.0)
+
+    Returns:
+        float or ndarray: values in [0, 1]
+    """
+    x = np.asarray(x, dtype=float)
+    # Guard for non-finite values
+    if not np.isfinite(x).all():
+        return np.where(np.isfinite(x), 1.0 / (1.0 + np.exp(-steepness * x)), np.nan)
+    return 1.0 / (1.0 + np.exp(-steepness * x))
+
+
+def chaos_score(values, embedding_dim=None, delay=None, evolution_steps=20, steepness=2.0):
+    """Compute a normalized chaos score from the largest Lyapunov exponent.
+
+    Wraps `largest_lyapunov_exponent` and applies a sigmoid transform
+    to yield a value in [0, 1] suitable for radar charts and comparisons.
+
+    The default `steepness=2.0` increases slope near x==0 so that
+    chaotic series (positive exponents) map close to 1 quickly,
+    while non-chaotic (zero/negative) map closer to 0.
+
+    Args:
+        values: array-like, time series values
+        embedding_dim: int or None, embedding dimension m (default: auto via Cao)
+        delay: int or None, time delay τ for embedding (default: auto via ACF)
+        evolution_steps: int, steps Δt to track divergence (default: 20)
+        steepness: float, k parameter for sigmoid (default: 2.0)
+
+    Returns:
+        float: chaos score in [0, 1]; NaN if exponent cannot be estimated.
+    """
+    lam = largest_lyapunov_exponent(values, embedding_dim=embedding_dim, delay=delay, evolution_steps=evolution_steps)
+    if np.isnan(lam):
+        return np.nan
+    return float(chaos_sigmoid(lam, steepness=steepness))
 
 
 def _estimate_delay_autocorrelation(y, threshold=0.3):

@@ -20,7 +20,7 @@ from generators import (generate_constant, generate_lorenz,
                         generate_noisy_multi_frequency, generate_sine_wave,
                         generate_white_noise)
 
-from src.chaos import largest_lyapunov_exponent
+from src.chaos import largest_lyapunov_exponent, chaos_score
 from src.complexity import spectral_entropy
 from src.data_quality import aggregate_quality_score
 from src.visualization import plot_3d_scatter, plot_3d_with_radar
@@ -55,7 +55,8 @@ def main():
     for name, series in series_dict.items():
         quality = aggregate_quality_score(series)
         complexity = spectral_entropy(series)
-        chaos = largest_lyapunov_exponent(series)
+        # Compute raw Lyapunov exponent and normalized chaos score
+        chaos = chaos_score(series, steepness=2.0)
         
         names.append(name)
         quality_scores.append(quality)

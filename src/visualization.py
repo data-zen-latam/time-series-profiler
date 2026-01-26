@@ -257,6 +257,125 @@ def plot_3d_with_radar(quality_values, complexity_values, chaos_values,
     sizes = [8 + (i % 7) for i in range(n)]
     opacities = [0.6 + (i % 5) * 0.1 for i in range(n)]
     
+    # If saving to HTML, build two figures side-by-side with independent legends
+    if output_path:
+        fig3d = go.Figure()
+        for i in range(n):
+            fig3d.add_trace(go.Scatter3d(
+                x=[quality_values[i]],
+                y=[complexity_values[i]],
+                z=[chaos_values[i]],
+                mode='markers',
+                marker=dict(
+                    size=sizes[i],
+                    color=colors[i],
+                    opacity=opacities[i],
+                    line=dict(color='white', width=2),
+                ),
+                name=series_ids[i],
+                hovertemplate='<b>%{fullData.name}</b><br>' +
+                              'Data Quality: %{x:.4f}<br>' +
+                              'Complexity: %{y:.4f}<br>' +
+                              'Chaos: %{z:.4f}<extra></extra>',
+                showlegend=True
+            ))
+
+        fig3d.update_layout(
+            title=dict(text=title, x=0.5, xanchor='center'),
+            scene=dict(
+                xaxis=dict(
+                    title='Data Quality Score',
+                    title_font=dict(size=12),
+                    backgroundcolor='rgba(230, 230, 230, 0.5)',
+                    gridcolor='rgba(100, 100, 100, 0.9)',
+                    gridwidth=2.5,
+                    showbackground=True,
+                    zeroline=True,
+                ),
+                yaxis=dict(
+                    title='Complexity Score',
+                    title_font=dict(size=12),
+                    backgroundcolor='rgba(230, 230, 230, 0.5)',
+                    gridcolor='rgba(100, 100, 100, 0.9)',
+                    gridwidth=2.5,
+                    showbackground=True,
+                    zeroline=True,
+                ),
+                zaxis=dict(
+                    title='Chaotic Behavior (λ_max)',
+                    title_font=dict(size=12),
+                    backgroundcolor='rgba(230, 230, 230, 0.5)',
+                    gridcolor='rgba(100, 100, 100, 0.9)',
+                    gridwidth=2.5,
+                    showbackground=True,
+                    zeroline=True,
+                ),
+                camera=dict(eye=dict(x=-1.5, y=-1.5, z=1.5), center=dict(x=0, y=0, z=0)),
+                aspectmode='cube',
+            ),
+            width=900,
+            height=700,
+            hovermode='closest',
+            font=dict(size=11),
+            margin=dict(l=50, r=50, b=50, t=80),
+            showlegend=True,
+        )
+
+        figPolar = go.Figure()
+        if radar_metric_sets and radar_labels:
+            metric_names = list(radar_metric_sets[0].keys()) if radar_metric_sets else []
+            for idx, (metric_set, label) in enumerate(zip(radar_metric_sets, radar_labels)):
+                r_values = [metric_set.get(m, 0) for m in metric_names]
+                line_color = colors[idx % len(colors)] if colors is not None else OKABE_ITO_COLORS[idx % len(OKABE_ITO_COLORS)]
+                initial_visible = True if str(label).strip().lower() == 'white noise' else 'legendonly'
+                figPolar.add_trace(go.Scatterpolar(
+                    r=r_values,
+                    theta=metric_names,
+                    mode='lines',
+                    fill='toself',
+                    fillcolor=_hex_to_rgba(line_color, alpha=0.15),
+                    line=dict(color=line_color, width=2.5, dash='solid'),
+                    name=label,
+                    opacity=1.0,
+                    hovertemplate='<b>%{fullData.name}</b><br>' + '%{theta}: %{r:.4f}<extra></extra>',
+                    showlegend=True,
+                    visible=initial_visible,
+                ))
+
+        figPolar.update_layout(
+            title=dict(text='Radar', x=0.5, xanchor='center'),
+            width=900,
+            height=700,
+            hovermode='closest',
+            font=dict(size=11),
+            margin=dict(l=50, r=50, b=50, t=80),
+            showlegend=True,
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 1],
+                    tickfont=dict(size=10),
+                ),
+            ),
+        )
+
+        # Build combined HTML with two independent legends (no hover script)
+        html_left = fig3d.to_html(include_plotlyjs='cdn', full_html=False, div_id='plotly-3d')
+        html_right = figPolar.to_html(include_plotlyjs=False, full_html=False, div_id='plotly-radar')
+        full_html = (
+            "<!DOCTYPE html><html><head><meta charset='utf-8'><title>3D + Radar</title>"+
+            "<style>body{margin:0;font-family:sans-serif;} .row{display:flex;flex-direction:row;} .col{flex:1;padding:10px;} </style></head><body>"+
+            "<div class='row'>"+
+            "<div class='col'>" + html_left + "</div>"+
+            "<div class='col'>" + html_right + "</div>"+
+            "</div>"+
+            "</body></html>"
+        )
+        with open(output_path, 'w') as f:
+            f.write(full_html)
+        return fig3d
+
+    # Fallback for environments without output_path (e.g., inline notebooks):
     # Create subplots: 1 row, 2 cols (3d + regular)
     fig = make_subplots(
         rows=1, cols=2,
@@ -284,7 +403,9 @@ def plot_3d_with_radar(quality_values, complexity_values, chaos_values,
                           'Complexity: %{y:.4f}<br>' +
                           'Chaos: %{z:.4f}<extra></extra>',
             showlegend=True,
-            legendgroup=series_ids[i],
+            # Group all 3D points under one legend section
+            legendgroup='3D',
+            legendgrouptitle_text='3D Scatter' if i == 0 else None,
         ), row=1, col=1)
     
     # Add radar chart traces if provided
@@ -304,15 +425,19 @@ def plot_3d_with_radar(quality_values, complexity_values, chaos_values,
             fig.add_trace(go.Scatterpolar(
                 r=r_values,
                 theta=metric_names,
+                mode='lines',
                 fill='toself',
-                fillcolor=_hex_to_rgba(line_color, alpha=0.0),  # transparent fill
-                line=dict(color=line_color, width=2.5),          # colored border
+                fillcolor=_hex_to_rgba(line_color, alpha=0.15),  # low opacity by default
+                line=dict(color=line_color, width=2.5, dash='solid'),  # solid border
                 name=label,
                 opacity=1.0,
                 hovertemplate='<b>%{fullData.name}</b><br>' +
                               '%{theta}: %{r:.4f}<extra></extra>',
                 showlegend=True,
-                legendgroup=label,
+                # Group all radar traces under one legend section
+                legendgroup='Radar',
+                legendgrouptitle_text='Radar' if idx == 0 else None,
+                visible=True if str(label).strip().lower() == 'white noise' else 'legendonly',
             ), row=1, col=2)
     
     # Update 3D scene layout
@@ -375,6 +500,7 @@ def plot_3d_with_radar(quality_values, complexity_values, chaos_values,
             bordercolor='rgba(0, 0, 0, 0.2)',
             borderwidth=1,
             font=dict(size=10),
+            tracegroupgap=10,
         ),
     )
     

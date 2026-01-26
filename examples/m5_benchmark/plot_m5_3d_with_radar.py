@@ -14,7 +14,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.complexity import spectral_entropy
-from src.chaos import largest_lyapunov_exponent
+from src.chaos import largest_lyapunov_exponent, chaos_score
 from src.data_quality import aggregate_quality_score
 from src.visualization import plot_3d_with_radar
 
@@ -46,7 +46,8 @@ def compute_metrics(series_dict):
         names.append(name)
         q.append(aggregate_quality_score(series))
         c.append(spectral_entropy(series))
-        h.append(largest_lyapunov_exponent(series))
+        # Use normalized chaos score for visualization
+        h.append(chaos_score(series, steepness=2.0))
     return names, q, c, h
 
 
